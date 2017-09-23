@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f  
+set ipaddress [lindex $argv 0]  
+if { $argc != 1 } {  
+ puts stderr $ipaddress
+ exit 1  
+ }  
+set timeout -1
+ 
+spawn ssh root@$ipaddress  
+expect {  
+"yes/no" { send "yes\r";exp_continue }  
+"password:" { send "password\r" }  
+}  
+ 
+expect "]*" 
+send "cd /app\r"
+send "scp root@10.0.1.7:/app/expect/export.txt export.txt\r"
+expect {
+"yes/no" { send "yes\r";exp_continue }
+"password:" { send "password\r" }
+}
+sleep 1
+send "cat export.txt >> /etc/profile\r"  
+send "source /etc/profile\r"  
+send "rm -rf export.txt\r"
+send "exit\r "  
+send "exit\r "  
+expect eof {exit 1}  
